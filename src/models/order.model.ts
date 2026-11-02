@@ -43,8 +43,10 @@ const orderSchema = new Schema<IOrder>({
 });
 
 orderSchema.pre<IOrder>('save', function () {
+  if (this.total != null) return;
+
   this.total = (this.products || []).reduce(
-    (sum, p) => sum + (p.quantity || 0) * (p.price || 0),
+    (sum, p) => sum + (p?.quantity || 0) * (p?.price || 0),
     0
   );
 });
