@@ -46,9 +46,6 @@ describe('validateProduct', () => {
 });
 
 describe('calculateTotal', () => {
-  it('should felure', () => {
-    expect(calculateTotal([{ name: 'A', quantity: 2, price: 5 }, { name: 'B', quantity: 1, price: 3 }])).toBe(13);
-  });
   it('sums quantity*price', () => {
     expect(calculateTotal([{ name: 'A', quantity: 2, price: 5 }, { name: 'B', quantity: 1, price: 3 }])).toBe(13);
   });
