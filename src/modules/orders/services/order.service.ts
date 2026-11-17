@@ -1,10 +1,11 @@
 import { orderRepository } from "../repositories/order.repository";
-import { buildOrderFilter, OrderFilters } from "../utils/order-filters";
+import { buildOrderFilter } from "../utils/order-filters";
+import { OrderFilters } from "../order.types";
 import {
   validateOrderData,
   validateFilters,
   calculateTotal,
-} from "../utils/order-validators";
+} from "../validators/order-validators";
 
 export async function createOrder(data: any) {
   validateOrderData(data);

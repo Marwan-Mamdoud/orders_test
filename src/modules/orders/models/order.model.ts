@@ -1,29 +1,7 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
+import { ORDER_STATUSES, OrderStatus, IProduct, IOrder } from '../order.types';
 
-export const ORDER_STATUSES = [
-  'pending',
-  'processing',
-  'shipped',
-  'delivered',
-  'cancelled',
-  'returned',
-] as const;
-
-export type OrderStatus = (typeof ORDER_STATUSES)[number];
-
-export interface IProduct {
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-export interface IOrder extends Document {
-  status: OrderStatus;
-  createdAt: Date;
-  courier: string;
-  products: IProduct[];
-  total: number;
-}
+export { ORDER_STATUSES, OrderStatus, IProduct, IOrder } from '../order.types';
 
 const productSchema = new Schema<IProduct>(
   {
@@ -43,7 +21,7 @@ const orderSchema = new Schema<IOrder>({
 });
 
 orderSchema.pre<IOrder>('save', function () {
-  if (this.total != null) return;
+  if (this.total) return;
 
   this.total = (this.products || []).reduce(
     (sum, p) => sum + (p?.quantity || 0) * (p?.price || 0),

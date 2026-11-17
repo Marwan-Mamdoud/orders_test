@@ -1,23 +1,4 @@
-import { ORDER_STATUSES } from '../models/order.model';
-
-export interface ProductInput {
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-export interface OrderInput {
-  status?: string;
-  courier?: string;
-  products?: ProductInput[];
-}
-
-export interface OrderFilters {
-  status?: string;
-  courier?: string;
-  startDate?: string | Date;
-  endDate?: string | Date;
-}
+import { ORDER_STATUSES } from '../order.types';
 
 export function validateProduct(product: any, index: number = 0): void {
   if (!product || typeof product !== 'object') {
@@ -48,14 +29,14 @@ export function validateOrderData(data: any): void {
   if (!data || typeof data !== 'object') {
     throw new Error('order data is required');
   }
-  if (!ORDER_STATUSES.includes(data.status)) {
+  if (typeof data.status !== 'string' || !ORDER_STATUSES.includes(data.status)) {
     throw new Error(`Unknown status value: ${data.status}`);
   }
   if (typeof data.courier !== 'string' || !data.courier.trim()) {
     throw new Error('courier is required');
   }
-  if (!Array.isArray(data.products)) {
-    throw new Error('products must be an array');
+  if (!Array.isArray(data.products) || data.products.length === 0) {
+    throw new Error('products must contain at least one product');
   }
   data.products.forEach((product: any, index: number) => {
     validateProduct(product, index);
@@ -68,7 +49,7 @@ export function validateFilters(filters: any): void {
   }
 
   if (filters.status !== undefined && filters.status !== null && filters.status !== '') {
-    if (!ORDER_STATUSES.includes(filters.status)) {
+    if (typeof filters.status !== 'string' || !ORDER_STATUSES.includes(filters.status)) {
       throw new Error(`Unknown status value: ${filters.status}`);
     }
   }
@@ -92,5 +73,4 @@ export function validateFilters(filters: any): void {
       throw new Error('endDate is not a valid date');
     }
   }
-
 }

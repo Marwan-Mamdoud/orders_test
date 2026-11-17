@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import request from 'supertest';
 import app from '../../src/app';
-import { startTestDb, stopTestDb, clearTestDb } from './db';
+import { startTestDb, stopTestDb, clearTestDb } from '../support/db';
+import { buildOrderPayload } from '../factories/order';
 
 beforeAll(startTestDb);
 afterEach(clearTestDb);
@@ -15,27 +16,21 @@ describe('GET /orders', () => {
   });
 
   it('returns created orders', async () => {
-    await request(app).post('/orders').send({
-      status: 'pending',
-      courier: 'DHL',
-      products: [{ name: 'A', quantity: 1, price: 1 }],
-    });
+    await request(app)
+      .post('/orders')
+      .send(buildOrderPayload({ status: 'pending', courier: 'DHL', products: [{ name: 'A', quantity: 1, price: 1 }] }));
     const res = await request(app).get('/orders');
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
   });
 
   it('filters by status', async () => {
-    await request(app).post('/orders').send({
-      status: 'pending',
-      courier: 'DHL',
-      products: [{ name: 'A', quantity: 1, price: 1 }],
-    });
-    await request(app).post('/orders').send({
-      status: 'shipped',
-      courier: 'FedEx',
-      products: [{ name: 'B', quantity: 1, price: 1 }],
-    });
+    await request(app)
+      .post('/orders')
+      .send(buildOrderPayload({ status: 'pending', courier: 'DHL', products: [{ name: 'A', quantity: 1, price: 1 }] }));
+    await request(app)
+      .post('/orders')
+      .send(buildOrderPayload({ status: 'shipped', courier: 'FedEx', products: [{ name: 'B', quantity: 1, price: 1 }] }));
     const res = await request(app).get('/orders?status=shipped');
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
@@ -43,16 +38,12 @@ describe('GET /orders', () => {
   });
 
   it('filters by courier', async () => {
-    await request(app).post('/orders').send({
-      status: 'pending',
-      courier: 'DHL',
-      products: [{ name: 'A', quantity: 1, price: 1 }],
-    });
-    await request(app).post('/orders').send({
-      status: 'pending',
-      courier: 'FedEx',
-      products: [{ name: 'B', quantity: 1, price: 1 }],
-    });
+    await request(app)
+      .post('/orders')
+      .send(buildOrderPayload({ status: 'pending', courier: 'DHL', products: [{ name: 'A', quantity: 1, price: 1 }] }));
+    await request(app)
+      .post('/orders')
+      .send(buildOrderPayload({ status: 'pending', courier: 'FedEx', products: [{ name: 'B', quantity: 1, price: 1 }] }));
     const res = await request(app).get('/orders?courier=FedEx');
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
@@ -60,11 +51,9 @@ describe('GET /orders', () => {
   });
 
   it('filters by date range', async () => {
-    await request(app).post('/orders').send({
-      status: 'pending',
-      courier: 'DHL',
-      products: [{ name: 'A', quantity: 1, price: 1 }],
-    });
+    await request(app)
+      .post('/orders')
+      .send(buildOrderPayload({ status: 'pending', courier: 'DHL', products: [{ name: 'A', quantity: 1, price: 1 }] }));
     const now = new Date();
     const start = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
     const end = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
