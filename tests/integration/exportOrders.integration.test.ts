@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import request from 'supertest';
 import app from '../../src/app';
-import { startTestDb, stopTestDb, clearTestDb } from './db';
+import { startTestDb, stopTestDb, clearTestDb } from '../support/db';
+import { buildOrderPayload } from '../factories/order';
 
 beforeAll(startTestDb);
 afterEach(clearTestDb);
@@ -15,11 +16,9 @@ describe('POST /orders/export', () => {
   });
 
   it('returns same orders as list for identical filters', async () => {
-    await request(app).post('/orders').send({
-      status: 'pending',
-      courier: 'DHL',
-      products: [{ name: 'A', quantity: 1, price: 1 }],
-    });
+    await request(app)
+      .post('/orders')
+      .send(buildOrderPayload({ status: 'pending', courier: 'DHL', products: [{ name: 'A', quantity: 1, price: 1 }] }));
 
     const listRes = await request(app).get('/orders?status=pending');
     const exportRes = await request(app).post('/orders/export').send({ status: 'pending' });
@@ -30,21 +29,28 @@ describe('POST /orders/export', () => {
   });
 
   it('filters by courier', async () => {
-    await request(app).post('/orders').send({
-      status: 'pending',
-      courier: 'DHL',
-      products: [{ name: 'A', quantity: 1, price: 1 }],
-    });
-    await request(app).post('/orders').send({
-      status: 'pending',
-      courier: 'FedEx',
-      products: [{ name: 'B', quantity: 1, price: 1 }],
-    });
-
+    await request(app)
+      .post('/orders')
+      .send(buildOrderPayload({ status: 'pending', courier: 'DHL', products: [{ name: 'A', quantity: 1, price: 1 }] }));
+    await request(app)
+      .post('/orders')
+      .send(buildOrderPayload({ status: 'pending', courier: 'FedEx', products: [{ name: 'B', quantity: 1, price: 1 }] }));
     const res = await request(app).post('/orders/export').send({ courier: 'FedEx' });
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
     expect(res.body[0].courier).toBe('FedEx');
+  });
+
+  it('filters by date range', async () => {
+    await request(app)
+      .post('/orders')
+      .send(buildOrderPayload({ status: 'pending', courier: 'DHL', products: [{ name: 'A', quantity: 1, price: 1 }] }));
+    const now = new Date();
+    const start = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
+    const end = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+    const res = await request(app).post('/orders/export').send({ startDate: start, endDate: end });
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBeGreaterThanOrEqual(1);
   });
 
   it('returns 400 for unknown status', async () => {

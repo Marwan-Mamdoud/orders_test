@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import * as orderService from '../services/order.service';
-import { OrderFilters } from '../utils/order-filters';
+import { OrderFilters } from '../order.types';
 
-function extractFilters(req: Request): OrderFilters {
+export function extractFilters(req: Request): OrderFilters {
   const query = req.query || {};
   const hasQuery = Object.keys(query).length > 0;
   const source = hasQuery
@@ -19,29 +19,29 @@ function extractFilters(req: Request): OrderFilters {
   };
 }
 
-export async function createOrder(req: Request, res: Response) {
+export async function createOrder(req: Request, res: Response, next: NextFunction) {
   try {
     const order = await orderService.createOrder(req.body);
     res.status(201).json(order);
-  } catch (error: any) {
-    res.status(400).json({ error: error?.message || 'Bad request' });
+  } catch (err) {
+    next(err);
   }
 }
 
-export async function getOrders(req: Request, res: Response) {
+export async function getOrders(req: Request, res: Response, next: NextFunction) {
   try {
     const orders = await orderService.listOrders(extractFilters(req));
     res.json(orders);
-  } catch (error: any) {
-    res.status(400).json({ error: error?.message || 'Bad request' });
+  } catch (err) {
+    next(err);
   }
 }
 
-export async function exportOrders(req: Request, res: Response) {
+export async function exportOrders(req: Request, res: Response, next: NextFunction) {
   try {
     const orders = await orderService.exportOrders(extractFilters(req));
     res.json(orders);
-  } catch (error: any) {
-    res.status(400).json({ error: error?.message || 'Bad request' });
+  } catch (err) {
+    next(err);
   }
 }

@@ -1,5 +1,5 @@
 import { connectDB } from './db';
-import { Order, ORDER_STATUSES } from './models/order.model';
+import { Order, ORDER_STATUSES } from './modules/orders/models/order.model';
 import mongoose from 'mongoose';
 
 const COURIERS = ['DHL', 'FedEx', 'UPS', 'Aramex', 'USPS', 'Canada Post'];

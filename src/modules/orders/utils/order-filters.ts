@@ -1,9 +1,4 @@
-export interface OrderFilters {
-  status?: string;
-  courier?: string;
-  startDate?: string | Date;
-  endDate?: string | Date;
-}
+import { OrderFilters } from '../order.types';
 
 export function buildOrderFilter(filters: OrderFilters = {}): Record<string, any> {
   const filter: Record<string, any> = {};
